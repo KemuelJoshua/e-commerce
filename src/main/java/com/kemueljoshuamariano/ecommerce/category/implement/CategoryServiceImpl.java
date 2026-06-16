@@ -32,7 +32,10 @@ public class CategoryServiceImpl implements CategoryService {
 
             return new Response("success", categories, null);
         } catch (Exception e) {
-            return new Response("failed", new Error("Failed to fetch categories", 500));
+            return new Response(
+                "failed",
+                new Error("Failed to fetch categories: " + e.getMessage(), 500)
+            );
         }
     }
 
@@ -47,6 +50,7 @@ public class CategoryServiceImpl implements CategoryService {
             }
 
             Category category = existingCategory.orElseGet(Category::new);
+            category.setId(null); // Ensure a new ID is generated
             category.setName(categoryRequest.getName());
             category.setDescription(categoryRequest.getDescription());
             category.setDeleted(false);

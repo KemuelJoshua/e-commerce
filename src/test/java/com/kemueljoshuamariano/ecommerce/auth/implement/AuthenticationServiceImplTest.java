@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 
 import java.lang.reflect.Proxy;
@@ -33,10 +34,7 @@ class AuthenticationServiceImplTest {
             capturedAuthentication.set(authentication);
             return authentication;
         };
-        JwtService jwtService = jwtUser -> {
-            assertSame(user, jwtUser);
-            return "jwt-token";
-        };
+        JwtService jwtService = jwtServiceReturning(user, "jwt-token");
 
         AuthenticationServiceImpl authenticationService = new AuthenticationServiceImpl(
                 userRepositoryReturning(Optional.of(user)),
@@ -65,7 +63,7 @@ class AuthenticationServiceImplTest {
 
         AuthenticationServiceImpl authenticationService = new AuthenticationServiceImpl(
                 userRepositoryReturning(Optional.empty()),
-                user -> "unused-token",
+                jwtServiceReturning(null, "unused-token"),
                 authenticationManager
         );
 
@@ -96,5 +94,27 @@ class AuthenticationServiceImplTest {
                     throw new UnsupportedOperationException(method.getName());
                 }
         );
+    }
+
+    private JwtService jwtServiceReturning(User expectedUser, String token) {
+        return new JwtService() {
+            @Override
+            public String generateToken(User user) {
+                if (expectedUser != null) {
+                    assertSame(expectedUser, user);
+                }
+                return token;
+            }
+
+            @Override
+            public String extractUsername(String token) {
+                throw new UnsupportedOperationException("Not needed in this test");
+            }
+
+            @Override
+            public boolean isTokenValid(String token, UserDetails userDetails) {
+                throw new UnsupportedOperationException("Not needed in this test");
+            }
+        };
     }
 }

@@ -11,6 +11,8 @@ import com.kemueljoshuamariano.ecommerce.category.dto.CategoryRequest;
 import com.kemueljoshuamariano.ecommerce.category.service.CategoryService;
 import com.kemueljoshuamariano.ecommerce.common.response.Response;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/categories")
 public class CategoryController {
@@ -27,7 +29,7 @@ public class CategoryController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity<Response> createCategory(@RequestBody CategoryRequest categoryRequest) {
+    public ResponseEntity<Response> createCategory(@Valid @RequestBody CategoryRequest categoryRequest) {
         return ResponseEntity.ok(categoryService.createCategory(categoryRequest));
     }
 

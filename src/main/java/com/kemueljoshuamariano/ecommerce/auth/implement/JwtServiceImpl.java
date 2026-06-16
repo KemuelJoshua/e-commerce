@@ -2,8 +2,11 @@ package com.kemueljoshuamariano.ecommerce.auth.implement;
 
 import com.kemueljoshuamariano.ecommerce.user.model.User;
 import com.kemueljoshuamariano.ecommerce.auth.security.JwtService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
@@ -20,6 +23,14 @@ public class JwtServiceImpl implements JwtService {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8));
     }
 
+    private Claims extractAllClaims(String token) {
+        return Jwts.parser()
+                .verifyWith(getSigningKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+    }
+
     @Override
     public String generateToken(User user) {
         return Jwts.builder()
@@ -30,5 +41,21 @@ public class JwtServiceImpl implements JwtService {
                 .expiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60))
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    @Override
+    public String extractUsername(String token) {
+        return extractAllClaims(token).getSubject();
+    }
+
+    @Override
+    public boolean isTokenValid(String token, UserDetails userDetails) {
+        try {
+            Claims claims = extractAllClaims(token);
+            return claims.getSubject().equals(userDetails.getUsername())
+                    && claims.getExpiration().after(new Date());
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 }
