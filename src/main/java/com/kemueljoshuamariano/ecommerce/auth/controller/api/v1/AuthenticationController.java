@@ -1,4 +1,4 @@
-package com.kemueljoshuamariano.ecommerce.auth.controller;
+package com.kemueljoshuamariano.ecommerce.auth.controller.api.v1;
 
 import com.kemueljoshuamariano.ecommerce.auth.model.LoginRequest;
 import com.kemueljoshuamariano.ecommerce.common.response.Response;

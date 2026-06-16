@@ -1,4 +1,4 @@
-package com.kemueljoshuamariano.ecommerce.category.controller;
+package com.kemueljoshuamariano.ecommerce.category.controller.api.v1;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
