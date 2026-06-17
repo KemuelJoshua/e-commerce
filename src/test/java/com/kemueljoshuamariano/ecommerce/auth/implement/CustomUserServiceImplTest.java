@@ -1,5 +1,7 @@
 package com.kemueljoshuamariano.ecommerce.auth.implement;
 
+import com.kemueljoshuamariano.ecommerce.permission.model.Permission;
+import com.kemueljoshuamariano.ecommerce.role.model.Role;
 import com.kemueljoshuamariano.ecommerce.user.model.User;
 import com.kemueljoshuamariano.ecommerce.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
@@ -7,7 +9,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.lang.reflect.Proxy;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -20,8 +24,8 @@ class CustomUserServiceImplTest {
         User user = new User();
         user.setUsername("admin");
         user.setPassword("encoded-password");
-        user.setRole("ADMIN");
         user.setIsActive(true);
+        user.setRoles(new HashSet<>(Set.of(buildRole("ADMIN", "CATEGORY_READ", "CATEGORY_CREATE"))));
 
         CustomUserServiceImpl customUserService =
                 new CustomUserServiceImpl(userRepositoryReturning(Optional.of(user)));
@@ -31,8 +35,8 @@ class CustomUserServiceImplTest {
         assertEquals("admin", userDetails.getUsername());
         assertEquals("encoded-password", userDetails.getPassword());
         assertTrue(userDetails.isEnabled());
-        assertTrue(userDetails.getAuthorities().stream()
-                .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority())));
+        assertEquals(Set.of("ROLE_ADMIN", "CATEGORY_READ", "CATEGORY_CREATE"),
+                userDetails.getAuthorities().stream().map(authority -> authority.getAuthority()).collect(java.util.stream.Collectors.toSet()));
     }
 
     @Test
@@ -40,7 +44,6 @@ class CustomUserServiceImplTest {
         User user = new User();
         user.setUsername("disabled");
         user.setPassword("encoded-password");
-        user.setRole("USER");
         user.setIsActive(false);
 
         CustomUserServiceImpl customUserService =
@@ -69,6 +72,10 @@ class CustomUserServiceImplTest {
                         return user;
                     }
 
+                    if ("findByUsernameWithRoles".equals(method.getName())) {
+                        return user;
+                    }
+
                     if ("toString".equals(method.getName())) {
                         return "UserRepositoryTestProxy";
                     }
@@ -76,5 +83,20 @@ class CustomUserServiceImplTest {
                     throw new UnsupportedOperationException(method.getName());
                 }
         );
+    }
+
+    private Role buildRole(String roleName, String... permissionNames) {
+        Role role = new Role();
+        role.setName(roleName);
+
+        Set<Permission> permissions = new HashSet<>();
+        for (String permissionName : permissionNames) {
+            Permission permission = new Permission();
+            permission.setName(permissionName);
+            permissions.add(permission);
+        }
+
+        role.setPermissions(permissions);
+        return role;
     }
 }

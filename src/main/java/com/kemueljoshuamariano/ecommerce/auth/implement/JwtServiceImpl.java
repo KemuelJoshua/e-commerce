@@ -1,7 +1,7 @@
 package com.kemueljoshuamariano.ecommerce.auth.implement;
 
-import com.kemueljoshuamariano.ecommerce.user.model.User;
 import com.kemueljoshuamariano.ecommerce.auth.security.JwtService;
+import com.kemueljoshuamariano.ecommerce.user.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -16,6 +16,7 @@ import java.util.Date;
 @Service
 public class JwtServiceImpl implements JwtService {
 
+    private static final long TOKEN_EXPIRATION_SECONDS = 60L * 60;
     private static final String SECRET_KEY =
             "my-super-secret-key-my-super-secret-key-123456";
 
@@ -36,11 +37,15 @@ public class JwtServiceImpl implements JwtService {
         return Jwts.builder()
                 .subject(user.getUsername())
                 .claim("userId", user.getUserId())
-                .claim("role", user.getRole())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + 1000L * 60 * 60))
+                .expiration(new Date(System.currentTimeMillis() + TOKEN_EXPIRATION_SECONDS * 1000L))
                 .signWith(getSigningKey())
                 .compact();
+    }
+
+    @Override
+    public long getExpirationTimeSeconds() {
+        return TOKEN_EXPIRATION_SECONDS;
     }
 
     @Override

@@ -4,8 +4,12 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -48,11 +52,18 @@ public class User {
     @Column(name = "profile_picture", length = 500)
     private String profilePicture;
 
-    @Column(nullable = false, length = 50)
-    private String role = "USER";
-
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Set<com.kemueljoshuamariano.ecommerce.role.model.Role> roles = new HashSet<>();
 
     @Column(name = "created_at", insertable = false, updatable = false)
     private LocalDateTime createdAt;

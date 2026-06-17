@@ -85,6 +85,28 @@ curl -X POST http://localhost:8080/auth/authenticate \
   }'
 ```
 
+Example success response:
+
+```json
+{
+  "status": "success",
+  "payload": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+    "tokenType": "Bearer",
+    "expiresIn": 3600,
+    "user": {
+      "id": 1,
+      "username": "admin",
+      "email": "admin@example.com",
+      "roles": [
+        "ADMIN"
+      ]
+    }
+  },
+  "error": null
+}
+```
+
 ## Troubleshooting
 
 If startup fails:

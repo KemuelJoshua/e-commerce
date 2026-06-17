@@ -13,7 +13,6 @@ CREATE TABLE users (
 
     profile_picture VARCHAR(500),
 
-    role VARCHAR(50) NOT NULL DEFAULT 'USER',
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
 
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -21,4 +20,30 @@ CREATE TABLE users (
     ON UPDATE CURRENT_TIMESTAMP,
 
     CONSTRAINT uk_users_provider_provider_id UNIQUE (provider, provider_id)
+);
+
+CREATE TABLE roles (
+    role_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE user_roles (
+    user_id INT NOT NULL,
+    role_id INT NOT NULL,
+    PRIMARY KEY (user_id, role_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE CASCADE
+);
+
+CREATE TABLE permissions (
+    permission_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE
+);
+
+CREATE TABLE role_permissions (
+    role_id INT NOT NULL,
+    permission_id INT NOT NULL,
+    PRIMARY KEY (role_id, permission_id),
+    FOREIGN KEY (role_id) REFERENCES roles(role_id) ON DELETE CASCADE,
+    FOREIGN KEY (permission_id) REFERENCES permissions(permission_id) ON DELETE CASCADE
 );

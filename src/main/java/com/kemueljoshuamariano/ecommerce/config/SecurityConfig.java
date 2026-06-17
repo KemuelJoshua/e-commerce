@@ -3,10 +3,9 @@ package com.kemueljoshuamariano.ecommerce.config;
 import com.kemueljoshuamariano.ecommerce.auth.security.JwtAuthenticationFilter;
 import com.kemueljoshuamariano.ecommerce.auth.security.jwtAuthenticationEntryPoint;
 import com.kemueljoshuamariano.ecommerce.user.service.UserService;
-
-import org.apache.catalina.filters.RateLimitFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -46,6 +45,9 @@ public class SecurityConfig {
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/auth/**").permitAll()
+                        .requestMatchers("/roles/**", "/permissions/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/categories/**").hasAuthority("CATEGORY_READ")
+                        .requestMatchers(HttpMethod.POST, "/categories/**").hasAuthority("CATEGORY_CREATE")
                         .anyRequest().authenticated()
                 )
                 .authenticationProvider(authenticationProvider())
