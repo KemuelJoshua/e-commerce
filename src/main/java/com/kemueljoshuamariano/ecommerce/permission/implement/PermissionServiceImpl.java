@@ -1,7 +1,8 @@
 package com.kemueljoshuamariano.ecommerce.permission.implement;
 
-import com.kemueljoshuamariano.ecommerce.common.exception.Error;
+import com.kemueljoshuamariano.ecommerce.common.response.ErrorResponse;
 import com.kemueljoshuamariano.ecommerce.common.response.Response;
+import com.kemueljoshuamariano.ecommerce.common.response.SuccessResponse;
 import com.kemueljoshuamariano.ecommerce.permission.dto.PermissionRequest;
 import com.kemueljoshuamariano.ecommerce.permission.dto.PermissionResponse;
 import com.kemueljoshuamariano.ecommerce.permission.model.Permission;
@@ -29,9 +30,9 @@ public class PermissionServiceImpl implements PermissionService {
                     .map(this::mapPermission)
                     .toList();
 
-            return new Response("success", permissions, null);
+            return new SuccessResponse(permissions);
         } catch (Exception e) {
-            return new Response("failed", new Error("Failed to fetch permissions", 500));
+            return new ErrorResponse("Failed to fetch permissions", 500);
         }
     }
 
@@ -42,7 +43,7 @@ public class PermissionServiceImpl implements PermissionService {
             String permissionName = normalizeName(permissionRequest.getName());
 
             if (permissionRepository.findByName(permissionName).isPresent()) {
-                return new Response("failed", new Error("Permission already exists", 409));
+                return new ErrorResponse("Permission already exists", 409);
             }
 
             Permission permission = new Permission();
@@ -50,9 +51,9 @@ public class PermissionServiceImpl implements PermissionService {
 
             Permission savedPermission = permissionRepository.save(permission);
 
-            return new Response("success", mapPermission(savedPermission), null);
+            return new SuccessResponse(mapPermission(savedPermission));
         } catch (Exception e) {
-            return new Response("failed", new Error("Failed to create permission", 500));
+            return new ErrorResponse("Failed to create permission", 500);
         }
     }
 

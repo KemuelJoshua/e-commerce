@@ -1,7 +1,8 @@
 package com.kemueljoshuamariano.ecommerce.role.implement;
 
-import com.kemueljoshuamariano.ecommerce.common.exception.Error;
+import com.kemueljoshuamariano.ecommerce.common.response.ErrorResponse;
 import com.kemueljoshuamariano.ecommerce.common.response.Response;
+import com.kemueljoshuamariano.ecommerce.common.response.SuccessResponse;
 import com.kemueljoshuamariano.ecommerce.permission.model.Permission;
 import com.kemueljoshuamariano.ecommerce.permission.repository.PermissionRepository;
 import com.kemueljoshuamariano.ecommerce.role.dto.RoleAssignmentRequest;
@@ -45,9 +46,9 @@ public class RoleServiceImpl implements RoleService {
                     .map(this::mapRole)
                     .toList();
 
-            return new Response("success", roles, null);
+            return new SuccessResponse(roles);
         } catch (Exception e) {
-            return new Response("failed", new Error("Failed to fetch roles", 500));
+            return new ErrorResponse("Failed to fetch roles", 500);
         }
     }
 
@@ -58,7 +59,7 @@ public class RoleServiceImpl implements RoleService {
             String roleName = normalizeRoleName(roleRequest.getName());
 
             if (roleRepository.findByName(roleName).isPresent()) {
-                return new Response("failed", new Error("Role already exists", 409));
+                return new ErrorResponse("Role already exists", 409);
             }
 
             Role role = new Role();
@@ -73,9 +74,9 @@ public class RoleServiceImpl implements RoleService {
 
             Role savedRole = roleRepository.save(role);
 
-            return new Response("success", mapRole(savedRole), null);
+            return new SuccessResponse(mapRole(savedRole));
         } catch (Exception e) {
-            return new Response("failed", new Error("Failed to create role", 500));
+            return new ErrorResponse("Failed to create role", 500);
         }
     }
 
@@ -87,7 +88,7 @@ public class RoleServiceImpl implements RoleService {
                     .orElse(null);
 
             if (role == null) {
-                return new Response("failed", new Error("Role not found", 404));
+                return new ErrorResponse("Role not found", 404);
             }
 
             Response validationResponse = attachPermissions(role, rolePermissionRequest.getPermissions());
@@ -97,9 +98,9 @@ public class RoleServiceImpl implements RoleService {
 
             Role updatedRole = roleRepository.save(role);
 
-            return new Response("success", mapRole(updatedRole), null);
+            return new SuccessResponse(mapRole(updatedRole));
         } catch (Exception e) {
-            return new Response("failed", new Error("Failed to assign permissions to role", 500));
+            return new ErrorResponse("Failed to assign permissions to role", 500);
         }
     }
 
@@ -111,7 +112,7 @@ public class RoleServiceImpl implements RoleService {
                     .orElse(null);
 
             if (user == null) {
-                return new Response("failed", new Error("User not found", 404));
+                return new ErrorResponse("User not found", 404);
             }
 
             Set<String> requestedRoleNames = roleAssignmentRequest.getRoles()
@@ -122,15 +123,15 @@ public class RoleServiceImpl implements RoleService {
             List<Role> roles = roleRepository.findByNameIn(requestedRoleNames);
 
             if (roles.size() != requestedRoleNames.size()) {
-                return new Response("failed", new Error("One or more roles do not exist", 404));
+                return new ErrorResponse("One or more roles do not exist", 404);
             }
 
             user.setRoles(new HashSet<>(roles));
             User updatedUser = userRepository.save(user);
 
-            return new Response("success", mapUserRoles(updatedUser), null);
+            return new SuccessResponse(mapUserRoles(updatedUser));
         } catch (Exception e) {
-            return new Response("failed", new Error("Failed to assign roles to user", 500));
+            return new ErrorResponse("Failed to assign roles to user", 500);
         }
     }
 
@@ -142,7 +143,7 @@ public class RoleServiceImpl implements RoleService {
         List<Permission> permissions = permissionRepository.findByNameIn(normalizedPermissionNames);
 
         if (permissions.size() != normalizedPermissionNames.size()) {
-            return new Response("failed", new Error("One or more permissions do not exist", 404));
+            return new ErrorResponse("One or more permissions do not exist", 404);
         }
 
         role.setPermissions(new HashSet<>(permissions));

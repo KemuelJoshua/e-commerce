@@ -5,8 +5,9 @@ import com.kemueljoshuamariano.ecommerce.auth.dto.AuthenticationPayload;
 import com.kemueljoshuamariano.ecommerce.auth.model.LoginRequest;
 import com.kemueljoshuamariano.ecommerce.auth.security.JwtService;
 import com.kemueljoshuamariano.ecommerce.auth.service.AuthenticationService;
-import com.kemueljoshuamariano.ecommerce.common.exception.Error;
+import com.kemueljoshuamariano.ecommerce.common.response.ErrorResponse;
 import com.kemueljoshuamariano.ecommerce.common.response.Response;
+import com.kemueljoshuamariano.ecommerce.common.response.SuccessResponse;
 import com.kemueljoshuamariano.ecommerce.role.model.Role;
 import com.kemueljoshuamariano.ecommerce.user.model.User;
 import com.kemueljoshuamariano.ecommerce.user.repository.UserRepository;
@@ -33,9 +34,6 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public Response authenticateUser(LoginRequest loginRequest) {
-
-        Response response = new Response("success", null);
-
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -50,7 +48,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
             String token = jwtService.generateToken(user);
 
-            response.setPayload(new AuthenticationPayload(
+            return new SuccessResponse(new AuthenticationPayload(
                     token,
                     "Bearer",
                     jwtService.getExpirationTimeSeconds(),
@@ -61,17 +59,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                             extractRoleNames(user)
                     )
             ));
-
         } catch (AuthenticationException e) {
-
-            response.setStatus("failed");
-            response.setError(
-                    new Error("Incorrect username or password", 401)
-            );
+            return new ErrorResponse("Incorrect username or password", 401);
         }
-
-
-        return response;
     }
 
     private Set<String> extractRoleNames(User user) {

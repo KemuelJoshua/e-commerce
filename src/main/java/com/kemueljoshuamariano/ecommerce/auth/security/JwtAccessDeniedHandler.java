@@ -1,5 +1,7 @@
 package com.kemueljoshuamariano.ecommerce.auth.security;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.kemueljoshuamariano.ecommerce.common.response.ErrorResponse;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -12,6 +14,8 @@ import java.io.IOException;
 @Component
 public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Override
     public void handle(
             HttpServletRequest request,
@@ -21,16 +25,12 @@ public class JwtAccessDeniedHandler implements AccessDeniedHandler {
 
         response.setStatus(HttpServletResponse.SC_FORBIDDEN);
         response.setContentType("application/json");
-
-        response.getWriter().write("""
-        {
-            "status":"failed",
-            "payload":null,
-            "error":{
-                "errorCode":403,
-                "errorMessage":"Access denied"
-            }
-        }
-        """);
+        response.getWriter().write(objectMapper.writeValueAsString(
+                new ErrorResponse(
+                        "Access denied.",
+                        "You are not authorized to perform this action.",
+                        403
+                )
+        ));
     }
 }

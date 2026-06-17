@@ -4,7 +4,9 @@ import com.kemueljoshuamariano.ecommerce.auth.dto.AuthenticatedUser;
 import com.kemueljoshuamariano.ecommerce.auth.dto.AuthenticationPayload;
 import com.kemueljoshuamariano.ecommerce.auth.model.LoginRequest;
 import com.kemueljoshuamariano.ecommerce.auth.security.JwtService;
+import com.kemueljoshuamariano.ecommerce.common.response.ErrorResponse;
 import com.kemueljoshuamariano.ecommerce.common.response.Response;
+import com.kemueljoshuamariano.ecommerce.common.response.SuccessResponse;
 import com.kemueljoshuamariano.ecommerce.role.model.Role;
 import com.kemueljoshuamariano.ecommerce.user.model.User;
 import com.kemueljoshuamariano.ecommerce.user.repository.UserRepository;
@@ -56,6 +58,7 @@ class AuthenticationServiceImplTest {
                 new LoginRequest("admin", "secret")
         );
 
+        assertTrue(response instanceof SuccessResponse);
         assertEquals("success", response.getStatus());
         assertNull(response.getError());
         assertNotNull(response.getPayload());
@@ -91,11 +94,13 @@ class AuthenticationServiceImplTest {
                 new LoginRequest("admin", "wrong-password")
         );
 
+        assertTrue(response instanceof ErrorResponse);
         assertEquals("failed", response.getStatus());
         assertNull(response.getPayload());
         assertNotNull(response.getError());
-        assertEquals("Incorrect username or password", response.getError().getErrorMessage());
-        assertEquals(401, response.getError().getErrorCode());
+        assertEquals("Incorrect username or password", ((ErrorResponse) response).getMessage());
+        assertEquals("Incorrect username or password", response.getError().getDetails());
+        assertEquals(401, response.getError().getCode());
     }
 
     private UserRepository userRepositoryReturning(Optional<User> user) {

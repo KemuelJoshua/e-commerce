@@ -1,6 +1,8 @@
 package com.kemueljoshuamariano.ecommerce.role.implement;
 
+import com.kemueljoshuamariano.ecommerce.common.response.ErrorResponse;
 import com.kemueljoshuamariano.ecommerce.common.response.Response;
+import com.kemueljoshuamariano.ecommerce.common.response.SuccessResponse;
 import com.kemueljoshuamariano.ecommerce.permission.model.Permission;
 import com.kemueljoshuamariano.ecommerce.permission.repository.PermissionRepository;
 import com.kemueljoshuamariano.ecommerce.role.dto.RoleAssignmentRequest;
@@ -25,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class RoleServiceImplTest {
 
@@ -45,10 +48,12 @@ class RoleServiceImplTest {
 
         Response response = roleService.createRole(request);
 
+        assertTrue(response instanceof ErrorResponse);
         assertEquals("failed", response.getStatus());
         assertNotNull(response.getError());
-        assertEquals(409, response.getError().getErrorCode());
-        assertEquals("Role already exists", response.getError().getErrorMessage());
+        assertEquals("Role already exists", ((ErrorResponse) response).getMessage());
+        assertEquals(409, response.getError().getCode());
+        assertEquals("Role already exists", response.getError().getDetails());
     }
 
     @Test
@@ -77,6 +82,7 @@ class RoleServiceImplTest {
 
         Response response = roleService.assignPermissionsToRole("admin", request);
 
+        assertTrue(response instanceof SuccessResponse);
         assertEquals("success", response.getStatus());
         assertNull(response.getError());
         assertNotNull(savedRole.get());
@@ -110,6 +116,7 @@ class RoleServiceImplTest {
 
         Response response = roleService.assignRolesToUser(request);
 
+        assertTrue(response instanceof SuccessResponse);
         assertEquals("success", response.getStatus());
         assertNull(response.getError());
         assertNotNull(savedUser.get());

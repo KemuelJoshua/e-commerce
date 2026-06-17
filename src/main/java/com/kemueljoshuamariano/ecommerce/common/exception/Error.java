@@ -1,5 +1,6 @@
 package com.kemueljoshuamariano.ecommerce.common.exception;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -9,7 +10,10 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class Error {
 
-    private String errorMessage;
-    private int errorCode;
+    @JsonProperty("details")
+    private String details;
+
+    @JsonProperty("code")
+    private int code;
 
 }

@@ -1,5 +1,6 @@
 package com.kemueljoshuamariano.ecommerce.common.exception;
 
+import com.kemueljoshuamariano.ecommerce.common.response.ErrorResponse;
 import com.kemueljoshuamariano.ecommerce.common.response.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,6 @@ public class GlobalExceptionHandler {
                 .orElse("Validation failed");
 
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new Response("failed", null, new Error(message, 400)));
+                .body(new ErrorResponse(message, 400));
     }
 }

@@ -1,21 +1,26 @@
 package com.kemueljoshuamariano.ecommerce.common.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.kemueljoshuamariano.ecommerce.common.exception.Error;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-public class Response {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public abstract class Response {
 
-    private String status;
-    private Object payload;
-    private Error error;
+    private final String status;
 
-    public Response(String status, Error error) {
+    protected Response(String status) {
         this.status = status;
-        this.error = error;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public Object getPayload() {
+        return null;
+    }
+
+    public Error getError() {
+        return null;
     }
 }

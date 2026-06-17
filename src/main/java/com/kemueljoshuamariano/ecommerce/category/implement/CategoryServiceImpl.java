@@ -10,8 +10,9 @@ import com.kemueljoshuamariano.ecommerce.category.dto.CategoryRequest;
 import com.kemueljoshuamariano.ecommerce.category.model.Category;
 import com.kemueljoshuamariano.ecommerce.category.repository.CategoryRepository;
 import com.kemueljoshuamariano.ecommerce.category.service.CategoryService;
-import com.kemueljoshuamariano.ecommerce.common.exception.Error;
+import com.kemueljoshuamariano.ecommerce.common.response.ErrorResponse;
 import com.kemueljoshuamariano.ecommerce.common.response.Response;
+import com.kemueljoshuamariano.ecommerce.common.response.SuccessResponse;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -25,17 +26,11 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Response getAllCategories() {
         try {
-            List<Category> categories = categoryRepository.findAll()
-                    .stream()
-                    .filter(category -> !category.isDeleted())
-                    .toList();
+            List<Category> categories = categoryRepository.findByDeletedFalse();
 
-            return new Response("success", categories, null);
+            return new SuccessResponse(categories);
         } catch (Exception e) {
-            return new Response(
-                "failed",
-                new Error("Failed to fetch categories: " + e.getMessage(), 500)
-            );
+            return new ErrorResponse("Failed to fetch categories: " + e.getMessage(), 500);
         }
     }
 
@@ -43,23 +38,27 @@ public class CategoryServiceImpl implements CategoryService {
     @Transactional
     public Response createCategory(CategoryRequest categoryRequest) {
         try {
-            Optional<Category> existingCategory = categoryRepository.findByName(categoryRequest.getName());
+            Optional<Category> existingCategory =
+                    categoryRepository.findByName(categoryRequest.getName().trim());
 
-            if (existingCategory.isPresent() && !existingCategory.get().isDeleted()) {
-                return new Response("failed", new Error("Category already exists", 409));
+            if (existingCategory.isPresent()) {
+                return new ErrorResponse(
+                        "Category '" + categoryRequest.getName() + "' already exists.",
+                        409
+                );
             }
 
-            Category category = existingCategory.orElseGet(Category::new);
-            category.setId(null); // Ensure a new ID is generated
-            category.setName(categoryRequest.getName());
+            Category category = new Category();
+            category.setName(categoryRequest.getName().trim());
             category.setDescription(categoryRequest.getDescription());
             category.setDeleted(false);
 
             Category savedCategory = categoryRepository.save(category);
 
-            return new Response("success", savedCategory, null);
+            return new SuccessResponse(savedCategory);
+
         } catch (Exception e) {
-            return new Response("failed", new Error("Failed to create category", 500));
+            return new ErrorResponse(e.getMessage(), 500);
         }
     }
 
@@ -69,12 +68,12 @@ public class CategoryServiceImpl implements CategoryService {
             Optional<Category> category = categoryRepository.findById(id);
 
             if (category.isEmpty() || category.get().isDeleted()) {
-                return new Response("failed", new Error("Category not found", 404));
+                return new ErrorResponse("Category not found", 404);
             }
 
-            return new Response("success", category.get(), null);
+            return new SuccessResponse(category.get());
         } catch (Exception e) {
-            return new Response("failed", new Error("Failed to fetch category", 500));
+            return new ErrorResponse("Failed to fetch category", 500);
         }
     }
 
@@ -85,14 +84,14 @@ public class CategoryServiceImpl implements CategoryService {
             Optional<Category> categoryOptional = categoryRepository.findById(id);
 
             if (categoryOptional.isEmpty() || categoryOptional.get().isDeleted()) {
-                return new Response("failed", new Error("Category not found", 404));
+                return new ErrorResponse("Category not found", 404);
             }
 
             Optional<Category> existingCategory = categoryRepository.findByName(categoryRequest.getName());
             if (existingCategory.isPresent()
                     && !existingCategory.get().getId().equals(id)
                     && !existingCategory.get().isDeleted()) {
-                return new Response("failed", new Error("Category already exists", 409));
+                return new ErrorResponse("Category already exists", 409);
             }
 
             Category category = categoryOptional.get();
@@ -101,9 +100,9 @@ public class CategoryServiceImpl implements CategoryService {
 
             Category updatedCategory = categoryRepository.save(category);
 
-            return new Response("success", updatedCategory, null);
+            return new SuccessResponse(updatedCategory);
         } catch (Exception e) {
-            return new Response("failed", new Error("Failed to update category", 500));
+            return new ErrorResponse("Failed to update category", 500);
         }
     }
 
@@ -114,16 +113,16 @@ public class CategoryServiceImpl implements CategoryService {
             Optional<Category> category = categoryRepository.findById(id);
 
             if (category.isEmpty() || category.get().isDeleted()) {
-                return new Response("failed", new Error("Category not found", 404));
+                return new ErrorResponse("Category not found", 404);
             }
 
             Category existingCategory = category.get();
             existingCategory.setDeleted(true);
             categoryRepository.save(existingCategory);
 
-            return new Response("success", "Category deleted successfully", null);
+            return new SuccessResponse("Category deleted successfully");
         } catch (Exception e) {
-            return new Response("failed", new Error("Failed to delete category", 500));
+            return new ErrorResponse("Failed to delete category", 500);
         }
     }
 }
